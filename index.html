@@ -1,6 +1,4 @@
-Nous avons identifié le problème : les cartes de services n'étaient pas reliées aux cases à cocher. Le clic sur une carte ne cochait pas la case correspondante. J'ai corrigé cela en ajoutant un écouteur d'événement JavaScript qui, au clic sur une carte, active/désactive la checkbox, déclenche l'animation et met à jour la progression. Le bouton d'envoi fonctionne désormais parfaitement. Voici la version entièrement fonctionnelle, avec des icônes animées, une sélection multiple fluide et une interface raffinée.
 
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -22,7 +20,6 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
             --primary-light: #FF5E8E;
             --secondary: #FFB347;
             --secondary-light: #FFD966;
-            --bg-dark: #0B0E1A;
             --glass-bg: rgba(12, 18, 34, 0.7);
             --card-bg: rgba(22, 28, 46, 0.85);
             --text-light: #ffffff;
@@ -80,7 +77,6 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Language toggle */
         .lang-pill {
             position: fixed;
             top: 1rem;
@@ -103,7 +99,6 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
         }
         .lang-pill:active { transform: scale(0.96); }
 
-        /* Header */
         .brand-header {
             text-align: center;
             margin-bottom: 1.5rem;
@@ -145,7 +140,6 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
             border-radius: 40px;
         }
 
-        /* Three trust badges - enhanced with animations and gradients */
         .badge-trust {
             display: flex;
             justify-content: center;
@@ -163,31 +157,17 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
             font-weight: 700;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: all 0.2s;
             animation: subtlePulse 2s ease-in-out infinite;
         }
-        .trust-item:nth-child(1) {
-            background: linear-gradient(135deg, #00C9FF, #92FE9D);
-            color: #0a1f2e;
-        }
-        .trust-item:nth-child(2) {
-            background: linear-gradient(135deg, #FF9A9E, #FECFEF);
-            color: #2d1b2e;
-        }
-        .trust-item:nth-child(3) {
-            background: linear-gradient(135deg, #FAD961, #F76B1C);
-            color: #2d1b0e;
-        }
+        .trust-item:nth-child(1) { background: linear-gradient(135deg, #00C9FF, #92FE9D); color: #0a1f2e; }
+        .trust-item:nth-child(2) { background: linear-gradient(135deg, #FF9A9E, #FECFEF); color: #2d1b2e; }
+        .trust-item:nth-child(3) { background: linear-gradient(135deg, #FAD961, #F76B1C); color: #2d1b0e; }
         @keyframes subtlePulse {
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.02); opacity: 0.95; }
         }
-        .trust-item i {
-            font-size: 0.85rem;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
-        }
+        .trust-item i { font-size: 0.85rem; }
 
-        /* Progress */
         .progress-container {
             margin: 0.8rem 0 1.5rem;
         }
@@ -214,7 +194,6 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
             box-shadow: 0 0 8px var(--primary);
         }
 
-        /* Inputs */
         .input-group {
             margin-bottom: 1.2rem;
         }
@@ -270,7 +249,6 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
             display: block;
         }
 
-        /* SERVICES GRID - multi-select with checkboxes */
         .services-section {
             margin: 1.5rem 0 0.5rem;
         }
@@ -401,7 +379,6 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
             transform: scale(0.97);
         }
 
-        /* Submit button */
         .btn-submit {
             width: 100%;
             background: linear-gradient(100deg, var(--primary), #FF6B6B);
@@ -422,7 +399,6 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
         }
         .btn-submit:active { transform: scale(0.97); }
 
-        /* Modal */
         .modal-success {
             position: fixed;
             inset: 0;
@@ -503,111 +479,111 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
         <div class="brand-header">
             <div class="logo-wrapper"><i class="fas fa-crown"></i></div>
             <h1>BrandRim</h1>
-            <div class="brand-subtitle" id="brandSubtitle">Digital Excellence · Premium Services</div>
+            <div class="brand-subtitle" id="brandSubtitle">Excellence Digitale · Services Premium</div>
             <div class="badge-trust">
-                <div class="trust-item"><i class="fas fa-bolt"></i> <span id="trust1">5 min response</span></div>
-                <div class="trust-item"><i class="fas fa-gem"></i> <span id="trust2">Premium quality</span></div>
-                <div class="trust-item"><i class="fas fa-shield-alt"></i> <span id="trust3">100% guaranteed</span></div>
+                <div class="trust-item"><i class="fas fa-bolt"></i> <span id="trust1">Réponse 5 min</span></div>
+                <div class="trust-item"><i class="fas fa-gem"></i> <span id="trust2">Qualité Premium</span></div>
+                <div class="trust-item"><i class="fas fa-shield-alt"></i> <span id="trust3">100% Garanti</span></div>
             </div>
         </div>
 
         <div class="progress-container">
-            <div class="progress-label"><span id="progressText">Form completion</span><span id="percentVal">0%</span></div>
+            <div class="progress-label"><span id="progressText">Complétude du formulaire</span><span id="percentVal">0%</span></div>
             <div class="progress-track"><div class="progress-fill" id="fillBar"></div></div>
         </div>
 
         <form id="leadForm">
             <div class="input-group" id="nameGroup">
-                <label><i class="fas fa-user"></i> <span id="nameLabel">Full name</span></label>
+                <label><i class="fas fa-user"></i> <span id="nameLabel">Nom complet</span></label>
                 <div class="input-icon">
-                    <input type="text" id="fullName" placeholder="John Doe" autocomplete="name">
+                    <input type="text" id="fullName" placeholder="Jean Dupont" autocomplete="name">
                     <i class="fas fa-user"></i>
                 </div>
-                <div class="error-msg" id="nameErrorMsg">Name required (at least 3 characters)</div>
+                <div class="error-msg" id="nameErrorMsg">Nom requis (au moins 3 caractères)</div>
             </div>
 
             <div class="input-group" id="emailGroup">
-                <label><i class="fas fa-envelope"></i> <span id="emailLabel">Email address</span></label>
+                <label><i class="fas fa-envelope"></i> <span id="emailLabel">Adresse email</span></label>
                 <div class="input-icon">
-                    <input type="email" id="emailAddr" placeholder="hello@brandrim.com" autocomplete="email">
+                    <input type="email" id="emailAddr" placeholder="contact@brandrim.com" autocomplete="email">
                     <i class="fas fa-envelope"></i>
                 </div>
-                <div class="error-msg" id="emailErrorMsg">Valid email required</div>
+                <div class="error-msg" id="emailErrorMsg">Email valide requis</div>
             </div>
 
             <div class="input-group" id="phoneGroup">
-                <label><i class="fas fa-phone-alt"></i> <span id="phoneLabel">Phone number</span></label>
+                <label><i class="fas fa-phone-alt"></i> <span id="phoneLabel">Numéro de téléphone</span></label>
                 <div class="input-icon">
                     <input type="tel" id="phoneNum" placeholder="06XXXXXXXX" maxlength="10">
                     <i class="fas fa-phone"></i>
                 </div>
-                <div class="error-msg" id="phoneErrorMsg">Valid Moroccan phone (06/07)</div>
+                <div class="error-msg" id="phoneErrorMsg">Téléphone marocain valide (06/07)</div>
             </div>
 
             <div class="services-section">
                 <div class="services-head">
-                    <label style="display: flex; gap: 6px;"><i class="fas fa-check-double"></i> <span id="serviceLabel">Choose your services (multiple)</span></label>
-                    <div class="services-count" id="selectedCount">0/12 selected</div>
+                    <label style="display: flex; gap: 6px;"><i class="fas fa-check-double"></i> <span id="serviceLabel">Choisissez vos services (plusieurs)</span></label>
+                    <div class="services-count" id="selectedCount">0/12 sélectionné(s)</div>
                 </div>
                 <div class="services-grid" id="servicesGridContainer"></div>
-                <div class="error-msg" id="globalServiceError" style="margin-top: 10px;">Please select at least one service</div>
+                <div class="error-msg" id="globalServiceError" style="margin-top: 10px;">Veuillez sélectionner au moins un service</div>
             </div>
 
-            <button type="submit" class="btn-submit"><i class="fab fa-whatsapp"></i> <span id="submitBtnText">Get started now</span></button>
+            <button type="submit" class="btn-submit"><i class="fab fa-whatsapp"></i> <span id="submitBtnText">Envoyer la demande</span></button>
         </form>
-        <footer><span id="footerText">Made with</span> ❤️ <span id="byBrand">by</span> <a href="#" style="color:#ffb347;">BrandRim</a> © 2025</footer>
+        <footer><span id="footerText">Fait avec</span> ❤️ <span id="byBrand">par</span> <a href="#" style="color:#ffb347;">BrandRim</a> © 2025</footer>
     </div>
 </div>
 
 <div class="modal-success" id="successModal">
     <div class="modal-card">
         <div class="success-icon"><i class="fas fa-check-double"></i></div>
-        <h2 id="modalTitle">Success! 🎉</h2>
-        <p id="modalMsg1">Thank you for choosing <span class="highlight">BrandRim</span></p>
-        <p id="modalMsg2">We will reply <span class="highlight">within 5 minutes</span></p>
-        <div class="response-chip"><i class="fab fa-whatsapp"></i> <span id="modalWAtext">Redirecting to WhatsApp</span></div>
-        <button class="modal-btn" id="closeModalBtn">Close ✨</button>
+        <h2 id="modalTitle">Succès ! 🎉</h2>
+        <p id="modalMsg1">Merci d'avoir choisi <span class="highlight">BrandRim</span></p>
+        <p id="modalMsg2">Nous vous répondrons <span class="highlight">sous 5 minutes</span></p>
+        <div class="response-chip"><i class="fab fa-whatsapp"></i> <span id="modalWAtext">Redirection vers WhatsApp</span></div>
+        <button class="modal-btn" id="closeModalBtn">Fermer ✨</button>
     </div>
 </div>
 
 <script>
-    // Service Data with vibrant colors
+    // Service Data
     const servicesDB = [
-        { en: "Brand Identity", fr: "Identité de marque", icon: "fas fa-palette", color: "#FF3B6F" },
-        { en: "Web & App", fr: "Web & App", icon: "fas fa-code", color: "#3B82F6" },
-        { en: "Video Marketing", fr: "Vidéo marketing", icon: "fas fa-video", color: "#EF4444" },
-        { en: "Consulting", fr: "Conseil", icon: "fas fa-chalkboard-user", color: "#F59E0B" },
-        { en: "Digital Courses", fr: "Cours digitaux", icon: "fas fa-graduation-cap", color: "#10B981" },
-        { en: "IPTV System", fr: "Système IPTV", icon: "fas fa-tv", color: "#8B5CF6" },
-        { en: "Social Media", fr: "Réseaux sociaux", icon: "fab fa-instagram", color: "#EC4899" },
-        { en: "Landing Page", fr: "Page d'atterrissage", icon: "fas fa-rocket", color: "#06B6D4" },
-        { en: "E-Learning", fr: "E-Learning", icon: "fas fa-laptop-code", color: "#14B8A6" },
-        { en: "Office 365", fr: "Office 365", icon: "fab fa-microsoft", color: "#F97316" },
-        { en: "Monetization", fr: "Monétisation", icon: "fas fa-coins", color: "#FBBF24" },
-        { en: "Logo Design", fr: "Logo design", icon: "fas fa-pen-nib", color: "#E11D48" }
+        { fr: "Identité de marque", en: "Brand Identity", icon: "fas fa-palette", color: "#FF3B6F" },
+        { fr: "Web & Application", en: "Web & App", icon: "fas fa-code", color: "#3B82F6" },
+        { fr: "Marketing vidéo", en: "Video Marketing", icon: "fas fa-video", color: "#EF4444" },
+        { fr: "Conseil stratégique", en: "Consulting", icon: "fas fa-chalkboard-user", color: "#F59E0B" },
+        { fr: "Formations digitales", en: "Digital Courses", icon: "fas fa-graduation-cap", color: "#10B981" },
+        { fr: "Système IPTV", en: "IPTV System", icon: "fas fa-tv", color: "#8B5CF6" },
+        { fr: "Réseaux sociaux", en: "Social Media", icon: "fab fa-instagram", color: "#EC4899" },
+        { fr: "Page d'atterrissage", en: "Landing Page", icon: "fas fa-rocket", color: "#06B6D4" },
+        { fr: "E-Learning", en: "E-Learning", icon: "fas fa-laptop-code", color: "#14B8A6" },
+        { fr: "Office 365", en: "Office 365", icon: "fab fa-microsoft", color: "#F97316" },
+        { fr: "Monétisation", en: "Monetization", icon: "fas fa-coins", color: "#FBBF24" },
+        { fr: "Design de logo", en: "Logo Design", icon: "fas fa-pen-nib", color: "#E11D48" }
     ];
 
-    let currentLang = "en";
+    let currentLang = "fr";
     const translations = {
+        fr: {
+            brandSubtitle: "Excellence Digitale · Services Premium",
+            trust1: "Réponse 5 min", trust2: "Qualité Premium", trust3: "100% Garanti",
+            progressText: "Complétude du formulaire", nameLabel: "Nom complet", emailLabel: "Adresse email", phoneLabel: "Numéro de téléphone",
+            serviceLabel: "Choisissez vos services (plusieurs)", submitBtnText: "Envoyer la demande", footerText: "Fait avec", byBrand: "par",
+            modalTitle: "Succès ! 🎉", modalMsg1: "Merci d'avoir choisi BrandRim", modalMsg2: "Nous vous répondrons sous 5 minutes",
+            modalWAtext: "Redirection vers WhatsApp", nameError: "Nom requis (au moins 3 caractères)",
+            emailError: "Email valide requis", phoneError: "Téléphone marocain valide (06/07)",
+            serviceError: "Veuillez sélectionner au moins un service", selectedCountPrefix: "sélectionné(s)", selectBadge: "CHOISIR"
+        },
         en: {
             brandSubtitle: "Digital Excellence · Premium Services",
             trust1: "5 min response", trust2: "Premium quality", trust3: "100% guaranteed",
             progressText: "Form completion", nameLabel: "Full name", emailLabel: "Email address", phoneLabel: "Phone number",
-            serviceLabel: "Choose your services (multiple)", submitBtnText: "Get started now", footerText: "Made with", byBrand: "by",
+            serviceLabel: "Choose your services (multiple)", submitBtnText: "Send request", footerText: "Made with", byBrand: "by",
             modalTitle: "Success! 🎉", modalMsg1: "Thank you for choosing BrandRim", modalMsg2: "We will reply within 5 minutes",
             modalWAtext: "Redirecting to WhatsApp", nameError: "Name required (at least 3 characters)",
             emailError: "Valid email required", phoneError: "Valid Moroccan phone (06/07)",
             serviceError: "Please select at least one service", selectedCountPrefix: "selected", selectBadge: "SELECT"
-        },
-        fr: {
-            brandSubtitle: "Excellence Digitale · Services Premium",
-            trust1: "Réponse 5 min", trust2: "Qualité Premium", trust3: "100% Garanti",
-            progressText: "Complétude du formulaire", nameLabel: "Nom complet", emailLabel: "Adresse email", phoneLabel: "Téléphone",
-            serviceLabel: "Choisissez vos services (plusieurs)", submitBtnText: "Commencer maintenant", footerText: "Fait avec", byBrand: "par",
-            modalTitle: "Succès ! 🎉", modalMsg1: "Merci d'avoir choisi BrandRim", modalMsg2: "Nous répondrons sous 5 minutes",
-            modalWAtext: "Redirection vers WhatsApp", nameError: "Nom requis (3 caractères min)",
-            emailError: "Email valide requis", phoneError: "Téléphone marocain valide (06/07)",
-            serviceError: "Veuillez sélectionner au moins un service", selectedCountPrefix: "sélectionné(s)", selectBadge: "CHOISIR"
         }
     };
 
@@ -642,7 +618,7 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
         const grid = document.getElementById("servicesGridContainer");
         grid.innerHTML = "";
         servicesDB.forEach((srv, idx) => {
-            const serviceName = srv[currentLang] || srv.en;
+            const serviceName = srv[currentLang];
             const iconClass = srv.icon;
             const iconColor = srv.color;
             const div = document.createElement("div");
@@ -660,14 +636,13 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
             `;
             grid.appendChild(div);
         });
-        // Attach click handler to each service card to toggle checkbox
+        // Click handler for cards
         document.querySelectorAll('.service-option').forEach(option => {
             const checkbox = option.querySelector('input[type="checkbox"]');
             const cardInner = option.querySelector('.service-card-inner');
             cardInner.addEventListener('click', (e) => {
                 e.stopPropagation();
                 checkbox.checked = !checkbox.checked;
-                // Trigger change event manually
                 const changeEvent = new Event('change', { bubbles: true });
                 checkbox.dispatchEvent(changeEvent);
             });
@@ -735,7 +710,7 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
         const phone = document.getElementById("phoneNum").value.trim();
         const selectedServices = Array.from(document.querySelectorAll('input[name="serviceCheckbox"]:checked'))
             .map(cb => cb.value).join(", ");
-        const msg = `*BrandRim - New Request*%0A%0A👤 Name: ${name}%0A📧 Email: ${email}%0A📱 Phone: ${phone}%0A🎯 Services: ${selectedServices}%0A📅 ${new Date().toLocaleDateString()}`;
+        const msg = `*BrandRim - Nouvelle demande*%0A%0A👤 Nom: ${name}%0A📧 Email: ${email}%0A📱 Téléphone: ${phone}%0A🎯 Services: ${selectedServices}%0A📅 ${new Date().toLocaleDateString()}`;
         window.open(`https://wa.me/212698490007?text=${msg}`, '_blank');
     }
 
@@ -758,19 +733,19 @@ Nous avons identifié le problème : les cartes de services n'étaient pas reli�
     });
 
     document.getElementById("globalLangToggle").addEventListener("click", () => {
-        currentLang = currentLang === "en" ? "fr" : "en";
+        currentLang = currentLang === "fr" ? "en" : "fr";
         localStorage.setItem("brandrim_lang", currentLang);
         document.documentElement.lang = currentLang;
-        document.getElementById("langBtnText").innerText = currentLang === "en" ? "FR" : "EN";
+        document.getElementById("langBtnText").innerText = currentLang === "fr" ? "EN" : "FR";
         updateAllTexts();
         updateProgressAndCount();
     });
 
-    // Initial load
-    const storedLang = localStorage.getItem("brandrim_lang") || "en";
+    // Initialisation en français
+    const storedLang = localStorage.getItem("brandrim_lang") || "fr";
     currentLang = storedLang;
     document.documentElement.lang = currentLang;
-    document.getElementById("langBtnText").innerText = currentLang === "en" ? "FR" : "EN";
+    document.getElementById("langBtnText").innerText = currentLang === "fr" ? "EN" : "FR";
     updateServicesGrid();
     updateAllTexts();
 

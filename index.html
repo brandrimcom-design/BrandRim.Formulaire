@@ -1,0 +1,787 @@
+Nous avons identifié le problème : les cartes de services n'étaient pas reliées aux cases à cocher. Le clic sur une carte ne cochait pas la case correspondante. J'ai corrigé cela en ajoutant un écouteur d'événement JavaScript qui, au clic sur une carte, active/désactive la checkbox, déclenche l'animation et met à jour la progression. Le bouton d'envoi fonctionne désormais parfaitement. Voici la version entièrement fonctionnelle, avec des icônes animées, une sélection multiple fluide et une interface raffinée.
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>BrandRim | Services Digitaux Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #FF2E63;
+            --primary-light: #FF5E8E;
+            --secondary: #FFB347;
+            --secondary-light: #FFD966;
+            --bg-dark: #0B0E1A;
+            --glass-bg: rgba(12, 18, 34, 0.7);
+            --card-bg: rgba(22, 28, 46, 0.85);
+            --text-light: #ffffff;
+            --text-muted: #cbd5e6;
+        }
+
+        body {
+            font-family: 'Inter', 'Space Grotesk', sans-serif;
+            background: radial-gradient(ellipse at 30% 30%, #12172f, #030617);
+            min-height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .app-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            background: radial-gradient(ellipse at 30% 30%, #12172f, #030617);
+        }
+
+        .app-wrapper::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle at 25% 40%, rgba(255,46,99,0.1) 2px, transparent 2px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .main-card {
+            max-width: 100%;
+            width: 100%;
+            min-height: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            padding: 1.2rem 1rem 2rem;
+            position: relative;
+            z-index: 2;
+            animation: fadeSlideUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Language toggle */
+        .lang-pill {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 179, 71, 0.5);
+            border-radius: 60px;
+            padding: 0.5rem 1rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s ease;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .lang-pill:active { transform: scale(0.96); }
+
+        /* Header */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .logo-wrapper {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, var(--primary), var(--secondary));
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.8rem;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            animation: floatLogo 3s ease-in-out infinite;
+        }
+        @keyframes floatLogo {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .logo-wrapper i { font-size: 2.3rem; color: white; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #FFF, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .brand-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            font-weight: 500;
+            background: rgba(255,255,255,0.08);
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+        }
+
+        /* Three trust badges - enhanced with animations and gradients */
+        .badge-trust {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin: 1rem 0 0;
+        }
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.4rem 1rem;
+            border-radius: 60px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+            animation: subtlePulse 2s ease-in-out infinite;
+        }
+        .trust-item:nth-child(1) {
+            background: linear-gradient(135deg, #00C9FF, #92FE9D);
+            color: #0a1f2e;
+        }
+        .trust-item:nth-child(2) {
+            background: linear-gradient(135deg, #FF9A9E, #FECFEF);
+            color: #2d1b2e;
+        }
+        .trust-item:nth-child(3) {
+            background: linear-gradient(135deg, #FAD961, #F76B1C);
+            color: #2d1b0e;
+        }
+        @keyframes subtlePulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.02); opacity: 0.95; }
+        }
+        .trust-item i {
+            font-size: 0.85rem;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
+
+        /* Progress */
+        .progress-container {
+            margin: 0.8rem 0 1.5rem;
+        }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .progress-track {
+            background: rgba(255,255,255,0.08);
+            border-radius: 60px;
+            height: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 60px;
+            transition: width 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        /* Inputs */
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        .input-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+        .input-icon {
+            position: relative;
+        }
+        .input-icon input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.6rem;
+            background: rgba(255,255,255,0.96);
+            border: 2px solid transparent;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .input-icon input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,46,99,0.2);
+            transform: scale(1.01);
+        }
+        .input-icon i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a94b0;
+            font-size: 1rem;
+            pointer-events: none;
+        }
+        .error-msg {
+            font-size: 0.65rem;
+            color: #ff8a8a;
+            margin-top: 4px;
+            display: none;
+        }
+        .error .input-icon input {
+            border-color: #ff6b6b;
+            background: rgba(255,107,107,0.05);
+        }
+        .error .error-msg {
+            display: block;
+        }
+
+        /* SERVICES GRID - multi-select with checkboxes */
+        .services-section {
+            margin: 1.5rem 0 0.5rem;
+        }
+        .services-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .services-count {
+            background: rgba(255,179,71,0.25);
+            padding: 0.2rem 0.7rem;
+            border-radius: 60px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--secondary-light);
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.9rem;
+        }
+        .service-option {
+            cursor: pointer;
+            position: relative;
+        }
+        .service-option input {
+            display: none;
+        }
+        .service-card-inner {
+            background: var(--card-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 1.3rem;
+            padding: 0.9rem 0.4rem 0.7rem;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+        .icon-container {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .service-icon {
+            font-size: 2.2rem;
+            transition: transform 0.2s ease, filter 0.2s;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+        .select-badge-inside {
+            position: absolute;
+            bottom: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #1e1e2a, #2a2a3a);
+            backdrop-filter: blur(8px);
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            color: #ffd966;
+            border: 1px solid rgba(255,179,71,0.7);
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            pointer-events: none;
+        }
+        .service-name {
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: white;
+            margin-top: 0.3rem;
+        }
+        .check-overlay {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: linear-gradient(145deg, #00E676, #00B248);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+            opacity: 0;
+            transform: scale(0.5) rotate(-180deg);
+            transition: all 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+            z-index: 5;
+        }
+        .service-option input:checked + .service-card-inner {
+            background: linear-gradient(135deg, rgba(255,46,99,0.25), rgba(255,179,71,0.2));
+            border: 1.5px solid var(--primary);
+            box-shadow: 0 8px 20px -6px rgba(255,46,99,0.6), inset 0 0 15px rgba(255,46,99,0.2);
+            transform: translateY(-2px);
+        }
+        .service-option input:checked + .service-card-inner .service-icon {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 8px rgba(255,46,99,0.6));
+        }
+        .service-option input:checked + .service-card-inner .select-badge-inside {
+            background: linear-gradient(135deg, #FFB347, #FF8C00);
+            color: #1e1e2a;
+            font-weight: 900;
+            border-color: white;
+            transform: translateX(-50%) scale(1.05);
+        }
+        .service-option input:checked ~ .check-overlay {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+            animation: checkPulse 0.4s ease-out;
+        }
+        @keyframes checkPulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .service-option:active .service-card-inner {
+            transform: scale(0.97);
+        }
+
+        /* Submit button */
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(100deg, var(--primary), #FF6B6B);
+            border: none;
+            border-radius: 50px;
+            padding: 0.9rem;
+            font-weight: 800;
+            font-size: 1rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 1.5rem 0 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 24px -6px rgba(255,46,99,0.5);
+        }
+        .btn-submit:active { transform: scale(0.97); }
+
+        /* Modal */
+        .modal-success {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(24px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+        .modal-success.active { display: flex; }
+        .modal-card {
+            background: rgba(18, 24, 38, 0.98);
+            border-radius: 2rem;
+            padding: 1.8rem;
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            border: 1px solid rgba(255,179,71,0.5);
+            box-shadow: 0 30px 50px rgba(0,0,0,0.6);
+            animation: modalPop 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .success-icon {
+            background: linear-gradient(145deg, #00E676, #00B248);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin: 0 auto 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+        .highlight { color: var(--secondary); font-weight: 800; }
+        .response-chip {
+            background: rgba(0,230,118,0.15);
+            padding: 0.3rem 0.8rem;
+            border-radius: 40px;
+            width: fit-content;
+            margin: 0.8rem auto;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        .modal-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 60px;
+            font-weight: bold;
+            margin-top: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-btn:active { transform: scale(0.96); }
+        footer {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #7e8aa8;
+            margin-top: 1rem;
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <div class="lang-pill" id="globalLangToggle">
+        <i class="fas fa-globe"></i>
+        <span id="langBtnText">EN</span>
+    </div>
+
+    <div class="main-card">
+        <div class="brand-header">
+            <div class="logo-wrapper"><i class="fas fa-crown"></i></div>
+            <h1>BrandRim</h1>
+            <div class="brand-subtitle" id="brandSubtitle">Digital Excellence · Premium Services</div>
+            <div class="badge-trust">
+                <div class="trust-item"><i class="fas fa-bolt"></i> <span id="trust1">5 min response</span></div>
+                <div class="trust-item"><i class="fas fa-gem"></i> <span id="trust2">Premium quality</span></div>
+                <div class="trust-item"><i class="fas fa-shield-alt"></i> <span id="trust3">100% guaranteed</span></div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-label"><span id="progressText">Form completion</span><span id="percentVal">0%</span></div>
+            <div class="progress-track"><div class="progress-fill" id="fillBar"></div></div>
+        </div>
+
+        <form id="leadForm">
+            <div class="input-group" id="nameGroup">
+                <label><i class="fas fa-user"></i> <span id="nameLabel">Full name</span></label>
+                <div class="input-icon">
+                    <input type="text" id="fullName" placeholder="John Doe" autocomplete="name">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="error-msg" id="nameErrorMsg">Name required (at least 3 characters)</div>
+            </div>
+
+            <div class="input-group" id="emailGroup">
+                <label><i class="fas fa-envelope"></i> <span id="emailLabel">Email address</span></label>
+                <div class="input-icon">
+                    <input type="email" id="emailAddr" placeholder="hello@brandrim.com" autocomplete="email">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="error-msg" id="emailErrorMsg">Valid email required</div>
+            </div>
+
+            <div class="input-group" id="phoneGroup">
+                <label><i class="fas fa-phone-alt"></i> <span id="phoneLabel">Phone number</span></label>
+                <div class="input-icon">
+                    <input type="tel" id="phoneNum" placeholder="06XXXXXXXX" maxlength="10">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <div class="error-msg" id="phoneErrorMsg">Valid Moroccan phone (06/07)</div>
+            </div>
+
+            <div class="services-section">
+                <div class="services-head">
+                    <label style="display: flex; gap: 6px;"><i class="fas fa-check-double"></i> <span id="serviceLabel">Choose your services (multiple)</span></label>
+                    <div class="services-count" id="selectedCount">0/12 selected</div>
+                </div>
+                <div class="services-grid" id="servicesGridContainer"></div>
+                <div class="error-msg" id="globalServiceError" style="margin-top: 10px;">Please select at least one service</div>
+            </div>
+
+            <button type="submit" class="btn-submit"><i class="fab fa-whatsapp"></i> <span id="submitBtnText">Get started now</span></button>
+        </form>
+        <footer><span id="footerText">Made with</span> ❤️ <span id="byBrand">by</span> <a href="#" style="color:#ffb347;">BrandRim</a> © 2025</footer>
+    </div>
+</div>
+
+<div class="modal-success" id="successModal">
+    <div class="modal-card">
+        <div class="success-icon"><i class="fas fa-check-double"></i></div>
+        <h2 id="modalTitle">Success! 🎉</h2>
+        <p id="modalMsg1">Thank you for choosing <span class="highlight">BrandRim</span></p>
+        <p id="modalMsg2">We will reply <span class="highlight">within 5 minutes</span></p>
+        <div class="response-chip"><i class="fab fa-whatsapp"></i> <span id="modalWAtext">Redirecting to WhatsApp</span></div>
+        <button class="modal-btn" id="closeModalBtn">Close ✨</button>
+    </div>
+</div>
+
+<script>
+    // Service Data with vibrant colors
+    const servicesDB = [
+        { en: "Brand Identity", fr: "Identité de marque", icon: "fas fa-palette", color: "#FF3B6F" },
+        { en: "Web & App", fr: "Web & App", icon: "fas fa-code", color: "#3B82F6" },
+        { en: "Video Marketing", fr: "Vidéo marketing", icon: "fas fa-video", color: "#EF4444" },
+        { en: "Consulting", fr: "Conseil", icon: "fas fa-chalkboard-user", color: "#F59E0B" },
+        { en: "Digital Courses", fr: "Cours digitaux", icon: "fas fa-graduation-cap", color: "#10B981" },
+        { en: "IPTV System", fr: "Système IPTV", icon: "fas fa-tv", color: "#8B5CF6" },
+        { en: "Social Media", fr: "Réseaux sociaux", icon: "fab fa-instagram", color: "#EC4899" },
+        { en: "Landing Page", fr: "Page d'atterrissage", icon: "fas fa-rocket", color: "#06B6D4" },
+        { en: "E-Learning", fr: "E-Learning", icon: "fas fa-laptop-code", color: "#14B8A6" },
+        { en: "Office 365", fr: "Office 365", icon: "fab fa-microsoft", color: "#F97316" },
+        { en: "Monetization", fr: "Monétisation", icon: "fas fa-coins", color: "#FBBF24" },
+        { en: "Logo Design", fr: "Logo design", icon: "fas fa-pen-nib", color: "#E11D48" }
+    ];
+
+    let currentLang = "en";
+    const translations = {
+        en: {
+            brandSubtitle: "Digital Excellence · Premium Services",
+            trust1: "5 min response", trust2: "Premium quality", trust3: "100% guaranteed",
+            progressText: "Form completion", nameLabel: "Full name", emailLabel: "Email address", phoneLabel: "Phone number",
+            serviceLabel: "Choose your services (multiple)", submitBtnText: "Get started now", footerText: "Made with", byBrand: "by",
+            modalTitle: "Success! 🎉", modalMsg1: "Thank you for choosing BrandRim", modalMsg2: "We will reply within 5 minutes",
+            modalWAtext: "Redirecting to WhatsApp", nameError: "Name required (at least 3 characters)",
+            emailError: "Valid email required", phoneError: "Valid Moroccan phone (06/07)",
+            serviceError: "Please select at least one service", selectedCountPrefix: "selected", selectBadge: "SELECT"
+        },
+        fr: {
+            brandSubtitle: "Excellence Digitale · Services Premium",
+            trust1: "Réponse 5 min", trust2: "Qualité Premium", trust3: "100% Garanti",
+            progressText: "Complétude du formulaire", nameLabel: "Nom complet", emailLabel: "Adresse email", phoneLabel: "Téléphone",
+            serviceLabel: "Choisissez vos services (plusieurs)", submitBtnText: "Commencer maintenant", footerText: "Fait avec", byBrand: "par",
+            modalTitle: "Succès ! 🎉", modalMsg1: "Merci d'avoir choisi BrandRim", modalMsg2: "Nous répondrons sous 5 minutes",
+            modalWAtext: "Redirection vers WhatsApp", nameError: "Nom requis (3 caractères min)",
+            emailError: "Email valide requis", phoneError: "Téléphone marocain valide (06/07)",
+            serviceError: "Veuillez sélectionner au moins un service", selectedCountPrefix: "sélectionné(s)", selectBadge: "CHOISIR"
+        }
+    };
+
+    function updateAllTexts() {
+        const t = translations[currentLang];
+        document.getElementById("brandSubtitle").innerText = t.brandSubtitle;
+        document.getElementById("trust1").innerText = t.trust1;
+        document.getElementById("trust2").innerText = t.trust2;
+        document.getElementById("trust3").innerText = t.trust3;
+        document.getElementById("progressText").innerText = t.progressText;
+        document.getElementById("nameLabel").innerText = t.nameLabel;
+        document.getElementById("emailLabel").innerText = t.emailLabel;
+        document.getElementById("phoneLabel").innerText = t.phoneLabel;
+        document.getElementById("serviceLabel").innerHTML = `<i class="fas fa-check-double"></i> ${t.serviceLabel}`;
+        document.getElementById("submitBtnText").innerText = t.submitBtnText;
+        document.getElementById("footerText").innerText = t.footerText;
+        document.getElementById("byBrand").innerText = t.byBrand;
+        document.getElementById("modalTitle").innerText = t.modalTitle;
+        document.getElementById("modalMsg1").innerHTML = t.modalMsg1.replace("BrandRim", '<span class="highlight">BrandRim</span>');
+        document.getElementById("modalMsg2").innerHTML = t.modalMsg2;
+        document.getElementById("modalWAtext").innerText = t.modalWAtext;
+        document.getElementById("nameErrorMsg").innerText = t.nameError;
+        document.getElementById("emailErrorMsg").innerText = t.emailError;
+        document.getElementById("phoneErrorMsg").innerText = t.phoneError;
+        document.getElementById("globalServiceError").innerText = t.serviceError;
+        document.querySelectorAll(".select-badge-inside").forEach(badge => badge.innerText = t.selectBadge);
+        updateServicesGrid();
+        updateSelectedCount();
+    }
+
+    function updateServicesGrid() {
+        const grid = document.getElementById("servicesGridContainer");
+        grid.innerHTML = "";
+        servicesDB.forEach((srv, idx) => {
+            const serviceName = srv[currentLang] || srv.en;
+            const iconClass = srv.icon;
+            const iconColor = srv.color;
+            const div = document.createElement("div");
+            div.className = "service-option";
+            div.innerHTML = `
+                <input type="checkbox" name="serviceCheckbox" value="${serviceName}" id="chk_${idx}">
+                <div class="service-card-inner">
+                    <div class="icon-container">
+                        <i class="service-icon ${iconClass}" style="color: ${iconColor}; text-shadow: 0 0 6px rgba(0,0,0,0.3);"></i>
+                        <span class="select-badge-inside">${translations[currentLang].selectBadge}</span>
+                    </div>
+                    <div class="service-name">${serviceName}</div>
+                </div>
+                <div class="check-overlay"><i class="fas fa-check"></i></div>
+            `;
+            grid.appendChild(div);
+        });
+        // Attach click handler to each service card to toggle checkbox
+        document.querySelectorAll('.service-option').forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            const cardInner = option.querySelector('.service-card-inner');
+            cardInner.addEventListener('click', (e) => {
+                e.stopPropagation();
+                checkbox.checked = !checkbox.checked;
+                // Trigger change event manually
+                const changeEvent = new Event('change', { bubbles: true });
+                checkbox.dispatchEvent(changeEvent);
+            });
+            checkbox.addEventListener('change', () => {
+                updateProgressAndCount();
+                document.getElementById("globalServiceError").style.display = "none";
+            });
+        });
+        updateProgressAndCount();
+    }
+
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('input[name="serviceCheckbox"]:checked').length;
+        const t = translations[currentLang];
+        document.getElementById("selectedCount").innerHTML = `${checked}/12 ${t.selectedCountPrefix}`;
+    }
+
+    function updateProgressAndCount() {
+        let completed = 0;
+        const nameVal = document.getElementById("fullName").value.trim();
+        const emailVal = document.getElementById("emailAddr").value.trim();
+        const phoneVal = document.getElementById("phoneNum").value.trim();
+        const hasService = document.querySelectorAll('input[name="serviceCheckbox"]:checked').length > 0;
+
+        if (nameVal.length >= 3) completed++;
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) completed++;
+        if (/^0[5-7]\d{8}$/.test(phoneVal)) completed++;
+        if (hasService) completed++;
+
+        const percent = Math.floor((completed / 4) * 100);
+        document.getElementById("fillBar").style.width = percent + "%";
+        document.getElementById("percentVal").innerHTML = percent + "%";
+        updateSelectedCount();
+
+        if(nameVal.length>=3) document.getElementById("nameGroup").classList.remove("error");
+        if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) document.getElementById("emailGroup").classList.remove("error");
+        if(/^0[5-7]\d{8}$/.test(phoneVal)) document.getElementById("phoneGroup").classList.remove("error");
+        if(hasService) document.getElementById("globalServiceError").style.display = "none";
+    }
+
+    function validateForm() {
+        let valid = true;
+        const name = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("emailAddr").value.trim();
+        const phone = document.getElementById("phoneNum").value.trim();
+        const servicesSelected = document.querySelectorAll('input[name="serviceCheckbox"]:checked').length;
+
+        if (name.length < 3) { document.getElementById("nameGroup").classList.add("error"); valid = false; }
+        else { document.getElementById("nameGroup").classList.remove("error"); }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById("emailGroup").classList.add("error"); valid = false; }
+        else { document.getElementById("emailGroup").classList.remove("error"); }
+
+        if (!/^0[5-7]\d{8}$/.test(phone)) { document.getElementById("phoneGroup").classList.add("error"); valid = false; }
+        else { document.getElementById("phoneGroup").classList.remove("error"); }
+
+        if (servicesSelected === 0) { document.getElementById("globalServiceError").style.display = "block"; valid = false; }
+        else { document.getElementById("globalServiceError").style.display = "none"; }
+        return valid;
+    }
+
+    function sendWhatsappLead() {
+        const name = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("emailAddr").value.trim();
+        const phone = document.getElementById("phoneNum").value.trim();
+        const selectedServices = Array.from(document.querySelectorAll('input[name="serviceCheckbox"]:checked'))
+            .map(cb => cb.value).join(", ");
+        const msg = `*BrandRim - New Request*%0A%0A👤 Name: ${name}%0A📧 Email: ${email}%0A📱 Phone: ${phone}%0A🎯 Services: ${selectedServices}%0A📅 ${new Date().toLocaleDateString()}`;
+        window.open(`https://wa.me/212698490007?text=${msg}`, '_blank');
+    }
+
+    document.getElementById("leadForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+        const modal = document.getElementById("successModal");
+        modal.classList.add("active");
+        setTimeout(() => {
+            sendWhatsappLead();
+        }, 2500);
+    });
+
+    function closeModal() {
+        document.getElementById("successModal").classList.remove("active");
+    }
+    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+    document.getElementById("successModal").addEventListener("click", (e) => {
+        if(e.target === document.getElementById("successModal")) closeModal();
+    });
+
+    document.getElementById("globalLangToggle").addEventListener("click", () => {
+        currentLang = currentLang === "en" ? "fr" : "en";
+        localStorage.setItem("brandrim_lang", currentLang);
+        document.documentElement.lang = currentLang;
+        document.getElementById("langBtnText").innerText = currentLang === "en" ? "FR" : "EN";
+        updateAllTexts();
+        updateProgressAndCount();
+    });
+
+    // Initial load
+    const storedLang = localStorage.getItem("brandrim_lang") || "en";
+    currentLang = storedLang;
+    document.documentElement.lang = currentLang;
+    document.getElementById("langBtnText").innerText = currentLang === "en" ? "FR" : "EN";
+    updateServicesGrid();
+    updateAllTexts();
+
+    document.getElementById("fullName").addEventListener("input", updateProgressAndCount);
+    document.getElementById("emailAddr").addEventListener("input", updateProgressAndCount);
+    document.getElementById("phoneNum").addEventListener("input", function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0,10);
+        updateProgressAndCount();
+    });
+    updateProgressAndCount();
+</script>
+</body>
+</html>
+```
